@@ -169,7 +169,9 @@ require('lazy').setup({
       },
     },
   },
-
+  {
+    'tpope/vim-fugitive',
+  },
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -529,7 +531,35 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {
+          root_dir = function(fname)
+            return require('lspconfig.util').root_pattern(
+              'Makefile',
+              'configure.ac',
+              'configure.in',
+              'config.h.in',
+              'meson.build',
+              'meson_options.txt',
+              'build.ninja'
+            )(fname) or require('lspconfig.util').root_pattern('compile_commands.json', 'compile_flags.txt')(fname) or require('lspconfig.util').find_git_ancestor(
+              fname
+            )
+          end,
+          cmd = {
+            '/usr/bin/clangd', -- use system clang
+            '--background-index',
+            '-j=12',
+            '--query-driver=/usr/bin/**/clang-*,/bin/clang,/bin/clang++,/usr/bin/gcc,/usr/bin/g++',
+            '--clang-tidy',
+            '--clang-tidy-checks=*',
+            '--all-scopes-completion',
+            '--cross-file-rename',
+            '--completion-style=detailed',
+            '--header-insertion-decorators',
+            '--header-insertion=iwyu',
+            '--pch-storage=memory',
+          },
+        },
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -564,7 +594,7 @@ require('lazy').setup({
       --    :Mason
       --
       --  You can press `g?` for help in this menu.
-      require('mason').setup()
+      require('mason').setup {}
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
