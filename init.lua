@@ -70,7 +70,7 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
-
+vim.autoindent = true
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -307,6 +307,11 @@ require('lazy').setup({
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
+          },
+        },
+        defaults = {
+          file_ignore_patterns = {
+            'node_modules',
           },
         },
       }
@@ -785,7 +790,18 @@ require('lazy').setup({
     lazy = false,
     priority = 1000,
     init = function()
-      vim.cmd.colorscheme 'dawnfox'
+      local handle = io.popen 'defaults read -g AppleInterfaceStyle'
+      if handle == nil then
+        vim.cmd.colorscheme 'danwfox'
+      else
+        local result = handle:read '*a'
+        handle:close()
+        if result == 'Dark\n' then
+          vim.cmd.colorscheme 'nightfox'
+        else
+          vim.cmd.colorscheme 'dawnfox'
+        end
+      end
     end,
   },
 
